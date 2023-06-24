@@ -26,6 +26,7 @@ namespace DbConnectionFactory
 				{
 					ServerType.MySql | ServerType.MariaDb => new MySqlAdapater(configuration),
 					ServerType.SqlServer => new SqlServerAdapter(configuration),
+					ServerType.PostgreSQL => new PostgreSqlAdapter(configuration),
 					_ => throw new NotSupportedException("Database not supported")
 				};
 				return result;

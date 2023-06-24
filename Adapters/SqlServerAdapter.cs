@@ -29,7 +29,7 @@ namespace DbConnectionFactory.Adapters
                 connection.Open();
                 return connection;
             }
-            catch (SqlException ex)
+            catch (SqlException)
             {
 
                 throw new SystemException("Error to connect SQL Server");
