@@ -44,9 +44,11 @@ public class Demo
 The following are examples for some databases
 
 > Postgres
-> - Server=ip;Port=5432;Database=database;User Id=postgres;Password=password;
+> - Server=ip;Port=5432;Database=database;User Id=postgres;Password=password;  
+
 > MySql and MariaDb
 > - Server=myServerAddress;Database=myDataBase;Uid=myUsername;Pwd=myPassword;
+
 > SQL Server
 > - Server=mySQLServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;
 
@@ -57,5 +59,5 @@ The following are examples for some databases
 ```
 
 
-> Please feel free to educate me if you have any comments.
+> **Note:** Please feel free to educate me if you have any comments.
 
