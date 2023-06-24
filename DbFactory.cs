@@ -8,6 +8,7 @@ namespace DbConnectionFactory
 	/// DbFactory class allow create a connection for:
 	///		* MySql/MariaDb
 	///		* SqlServer
+	///		* PostgreSQL
 	/// </summary>
     public class DbFactory : IDbFactory
     {
