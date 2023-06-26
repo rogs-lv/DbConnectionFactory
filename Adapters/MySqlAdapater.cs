@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
-using System.Configuration;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 
 namespace DbConnectionFactory.Adapters
 {

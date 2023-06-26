@@ -13,12 +13,12 @@ You can also use docfx as a NuGet library:
 ### Example usage:
 ```csharp
 
-public class Demo
+public class Employee
 {
     private readonly IConfiguration _configuration;
     private readonly IDbFactory _factory;
     
-    public Demo(IConfiguration configuration, IDbFactory factory)
+    public Employee(IConfiguration configuration, IDbFactory factory)
     {
         _factory = factory;
     }
@@ -35,7 +35,7 @@ public class Demo
 ```
 ```csharp
   //Program.cs
-  services.AddTransient<IDbFactory, DbFactory>();
+  services.AddScoped<IDbFactory, DbFactory>();
 ```
 
 
