@@ -20,6 +20,7 @@ public class Employee
     
     public Employee(IConfiguration configuration, IDbFactory factory)
     {
+        _configuration = configuration;
         _factory = factory;
     }
 
