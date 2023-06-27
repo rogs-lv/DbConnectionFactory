@@ -9,13 +9,15 @@ namespace DbConnectionFactory.Adapters
     /// MySqlAdapter class allow get connecting to MySql Server and MariaDb
     /// Assuming that the connection string is correct for each of them
     /// </summary>
-    public class MySqlAdapater : IAdapter
+    public class MySqlAdapter : IAdapter
     {
         private readonly IConfiguration _configuration;
+        private static DbConnection Connection { get; set; }
 
-        public MySqlAdapater(IConfiguration configuration)
+        public MySqlAdapter(IConfiguration configuration)
         {
             _configuration = configuration;
+            Connection = new MySqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         }
         /// <summary>
         /// Get connection for MySQL
@@ -26,15 +28,27 @@ namespace DbConnectionFactory.Adapters
         {
             try
             {
-                DbConnection connection = new MySqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-                connection.Open();
-                return connection;
+                Connection.Open();
+                return Connection;
             }
-            catch (MySqlException)
+            catch (MySqlException ex)
             {
-                //log
-                throw new SystemException("Error to connect Server");
+                throw ex;
             }
         }
+
+        public IDbConnection GetSesion() {
+            if (ConnectionState.Open == Connection.State)
+                return Connection;
+            else {
+                Connection.Open();
+                return Connection;
+            }
+        }
+        public void CloseConnection() {
+            if (ConnectionState.Open == Connection.State)
+                Connection.Close();
+        }
+
     }
 }

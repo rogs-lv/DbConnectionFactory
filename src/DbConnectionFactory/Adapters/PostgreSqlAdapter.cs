@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Npgsql;
 using System.Data;
+using System.Data.Common;
 
 namespace DbConnectionFactory.Adapters
 {
@@ -11,11 +12,14 @@ namespace DbConnectionFactory.Adapters
     public class PostgreSqlAdapter : IAdapter
     {
 		private readonly IConfiguration _configuration;
+        private static DbConnection Connection { get; set; }
 
         public PostgreSqlAdapter(IConfiguration configuration)
         {
             _configuration = configuration;
+            Connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         }
+
         /// <summary>
         /// Get connection for Postgres Server
         /// </summary>
@@ -25,15 +29,29 @@ namespace DbConnectionFactory.Adapters
         {
 			try
 			{
-                var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-                connection.Open();
-                return connection;
+                Connection.Open();
+                return Connection;
 			}
-			catch (NpgsqlException)
+			catch (NpgsqlException ex)
 			{
-
-				throw new SystemException("Error to connect Postgres Server"); ;
+                throw ex;
 			}
+        }
+
+        public IDbConnection GetSesion()
+        {
+            if (ConnectionState.Open == Connection.State)
+                return Connection;
+            else
+            {
+                Connection.Open();
+                return Connection;
+            }
+        }
+        public void CloseConnection()
+        {
+            if (ConnectionState.Open == Connection.State)
+                Connection.Close();
         }
     }
 }

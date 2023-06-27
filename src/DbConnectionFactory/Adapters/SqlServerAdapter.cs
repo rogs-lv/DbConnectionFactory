@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 
 namespace DbConnectionFactory.Adapters
@@ -11,10 +12,12 @@ namespace DbConnectionFactory.Adapters
     public class SqlServerAdapter : IAdapter
     {
         private readonly IConfiguration _configuration;
+        private static DbConnection Connection { get; set; }
 
         public SqlServerAdapter(IConfiguration configuration)
         {
             _configuration = configuration;
+            Connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         }
         /// <summary>
         /// Get connection for SqlServer
@@ -25,15 +28,30 @@ namespace DbConnectionFactory.Adapters
         {
             try
             {
-                var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-                connection.Open();
-                return connection;
+                Connection.Open();
+                return Connection;
             }
-            catch (SqlException)
+            catch (SqlException ex)
             {
-
-                throw new SystemException("Error to connect SQL Server");
+                throw ex;
             }
+        }
+
+        public IDbConnection GetSesion()
+        {
+            if (ConnectionState.Open == Connection.State)
+                return Connection;
+            else
+            {
+                Connection.Open();
+                return Connection;
+            }
+        }
+
+        public void CloseConnection()
+        {
+            if (ConnectionState.Open == Connection.State)
+                Connection.Close();
         }
     }
 }
