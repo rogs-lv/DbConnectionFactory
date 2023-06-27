@@ -24,7 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DbConnectionFactory\DbConnectionFactory.csproj" />
+    <ProjectReference Include="..\src\DbConnectionFactory\DbConnectionFactory.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Adapters\" />
   </ItemGroup>
 
 </Project>
