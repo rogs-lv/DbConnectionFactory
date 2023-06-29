@@ -63,7 +63,7 @@ namespace DbConnectionFactoryTests
         [Fact]
         public void CreateConnection_ServerTypeNotSupported_ReturnException()
         {
-            var serverType = ServerType.Oracle;
+            var serverType = (ServerType)5;
 
             Assert.Throws<NotSupportedException>(() => _factory.CreateConnection(serverType, It.IsAny<IConfiguration>()));
         }

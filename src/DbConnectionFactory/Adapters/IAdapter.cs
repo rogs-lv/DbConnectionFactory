@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Data.Common;
 
 namespace DbConnectionFactory.Adapters
 {
@@ -14,7 +13,7 @@ namespace DbConnectionFactory.Adapters
         /// Get session
         /// </summary>
         /// <returns></returns>
-        IDbConnection GetSesion();
+        IDbConnection GetSession();
         /// <summary>
         /// Close connection
         /// </summary>

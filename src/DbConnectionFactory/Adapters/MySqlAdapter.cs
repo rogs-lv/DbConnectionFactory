@@ -37,13 +37,11 @@ namespace DbConnectionFactory.Adapters
             }
         }
 
-        public IDbConnection GetSesion() {
-            if (ConnectionState.Open == Connection.State)
-                return Connection;
-            else {
+        public IDbConnection GetSession() {
+            if (ConnectionState.Open != Connection.State)
                 Connection.Open();
-                return Connection;
-            }
+
+            return Connection;
         }
         public void CloseConnection() {
             if (ConnectionState.Open == Connection.State)
