@@ -12,7 +12,7 @@ namespace DbConnectionFactory.Adapters
     public class PostgreSqlAdapter : IAdapter
     {
 		private readonly IConfiguration _configuration;
-        private static DbConnection Connection { get; set; }
+        private static DbConnection Connection { get; set; } = null;
 
         public PostgreSqlAdapter(IConfiguration configuration)
         {
@@ -27,17 +27,23 @@ namespace DbConnectionFactory.Adapters
         /// <exception cref="SystemException">Error to connect server</exception>
         public IDbConnection GetConnection()
         {
-			try
-			{
+            try
+            {
                 Connection.Open();
                 return Connection;
-			}
-			catch (NpgsqlException ex)
-			{
+            }
+            catch (PostgresException ex)
+            {
                 throw ex;
-			}
+            }
+            catch (NpgsqlException ex) { 
+                throw ex;
+            }
         }
-
+        /// <summary>
+        /// Get Session
+        /// </summary>
+        /// <returns></returns>
         public IDbConnection GetSession()
         {
             if (ConnectionState.Open != Connection.State)
@@ -45,6 +51,9 @@ namespace DbConnectionFactory.Adapters
             
             return Connection;
         }
+        /// <summary>
+        /// Close connection
+        /// </summary>
         public void CloseConnection()
         {
             if (ConnectionState.Open == Connection.State)
