@@ -31,7 +31,7 @@ public class Employee
     {
          var sql = "Insert/Select/Delete/Update";
          var result = await connection().ExecuteAsync(sql, entity);
-         connection().CloseConnection();
+         connection().Close();
          return result;
     }
 }
