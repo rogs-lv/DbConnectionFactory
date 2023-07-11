@@ -11,6 +11,9 @@
     <PackageId>FP.$(AssemblyName)</PackageId>
     <Authors>Glezz/rogs-lv</Authors>
     <Version>1.2.0</Version>
+    <RepositoryUrl>https://github.com/rogs-lv/DbConnectionFactory</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl></PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
