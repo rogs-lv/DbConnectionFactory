@@ -37,22 +37,63 @@ namespace DbConnectionFactory.Adapters
             }
         }
         /// <summary>
+        /// Get Connection Async
+        /// </summary>
+        /// <returns>returns open connection</returns>
+        public async Task<IDbConnection> GetConnectionAsync()
+        {
+            try
+            {
+                await Connection.OpenAsync();
+                return Connection;
+            }
+            catch (MySqlException ex)
+            {
+                throw ex;                
+            }
+        }
+        /// <summary>
         /// Get Session
         /// </summary>
         /// <returns>return IDbConnection</returns>
-        public IDbConnection GetSession() {
+        public IDbConnection GetSession()
+        {
             if (ConnectionState.Open != Connection.State)
                 Connection.Open();
 
             return Connection;
         }
         /// <summary>
+        /// Get Session Async
+        /// </summary>
+        /// <returns>returns the current connection, otherwise it opens the connection.</returns>
+        public async Task<IDbConnection> GetSessionAsync()
+        {
+            if (ConnectionState.Open != Connection.State)
+                await Connection.OpenAsync();
+
+            return Connection;
+        }
+        /// <summary>
         /// Close Connection
         /// </summary>
-        public void CloseConnection() {
+        public void CloseConnection()
+        {
             if (ConnectionState.Open == Connection.State)
                 Connection.Close();
         }
-
+        /// <summary>
+        /// Close Connection Async
+        /// </summary>
+        public Task CloseConnectionAsync()
+        {
+            if (ConnectionState.Open == Connection.State)
+            {
+                Connection.CloseAsync();
+                return Task.CompletedTask;
+            }
+            else
+                return Task.CompletedTask;
+        }
     }
 }

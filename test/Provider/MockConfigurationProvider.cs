@@ -2,7 +2,7 @@
 using Moq;
 using Moq.Language.Flow;
 
-namespace DbConnectionFactoryTests.Helpers
+namespace DbConnectionFactoryTests.Provider
 {
     public static class MockConfigurationProvider
     {

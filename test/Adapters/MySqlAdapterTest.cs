@@ -1,5 +1,5 @@
 ﻿using DbConnectionFactory.Adapters;
-using DbConnectionFactoryTests.Helpers;
+using DbConnectionFactoryTests.Provider;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using MySql.Data.MySqlClient;
@@ -33,15 +33,6 @@ namespace DbConnectionFactoryTests.Adapters
             _mockDbConnection = new();
             _validConnectionString = "Server=127.0.0.1;Database=testsMySql;Uid=test;Pwd=secret;";
             _invalidConnectionString = "Server=127.0.0.1;Database=testsMySql;Uid=test;Pwd=secret1;";
-            //_mockConfigurationSection
-            //    .SetupGet(m => m[It.Is<string>(s => s == "DefaultConnection")])
-            //    .Returns("Server=127.0.0.1;Database=ProductManagementDB;Uid=root;Pwd=secret;");
-
-            //_mockConfiguration
-            //    .Setup(a => a.GetSection(It.Is<string>(s => s == "ConnectionStrings")))
-            //    .Returns(_mockConfigurationSection.Object);
-
-            //_mySqlAdapter = new(_mockConfiguration.Object);
         }
 
         [Fact]
@@ -58,7 +49,20 @@ namespace DbConnectionFactoryTests.Adapters
             Assert.NotNull(result);
             Assert.IsAssignableFrom<IDbConnection>(result);
         }
+        [Fact]
+        public async void GetConnectionAsync_ValidConnectionString_NotNulConnectionAndIsAssignableFrom()
+        {
+            _mockConfigurationSection.ValidSection<Mock<IConfigurationSection>>(_validConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _mySqlAdapter = new(_mockConfiguration.Object);
 
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>())).Returns(() => { return Task.CompletedTask; });
+
+            var result = await _mySqlAdapter.GetConnectionAsync();
+
+            Assert.NotNull(result);
+            Assert.IsAssignableFrom<IDbConnection>(result);
+        }
         [Fact]
         public void GetConnection_ValidConnectionString_ConnectionStateIsOpen()
         {
@@ -69,6 +73,20 @@ namespace DbConnectionFactoryTests.Adapters
             _mockDbConnection.Setup(d => d.Open());
 
             var result = _mySqlAdapter.GetConnection();
+
+            Assert.Equal(ConnectionState.Open, result.State);
+        }
+
+        [Fact]
+        public async Task GetConnectionAsync_ValidConnectionString_ConnectionStateIsOpen()
+        {
+            _mockConfigurationSection.ValidSection<Mock<IConfigurationSection>>(_validConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _mySqlAdapter = new(_mockConfiguration.Object);
+
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>())).Returns(() => { return Task.CompletedTask; });
+
+            var result = await _mySqlAdapter.GetConnectionAsync();
 
             Assert.Equal(ConnectionState.Open, result.State);
         }
@@ -89,6 +107,21 @@ namespace DbConnectionFactoryTests.Adapters
         }
 
         [Fact]
+        public async Task GetConnectionAsync_InvalidConnectionString_InnerException()
+        {
+            _mockConfigurationSection.InValidSection<Mock<IConfigurationSection>>(_invalidConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _mySqlAdapter = new(_mockConfiguration.Object);
+
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>())).Returns(() => { return Task.CompletedTask; });
+
+            var result = await Assert.ThrowsAsync<MySqlException>(() => _mySqlAdapter.GetConnectionAsync());
+
+            Assert.NotNull(result.InnerException);
+            Assert.Contains("Access denied", result.InnerException.Message, StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        [Fact]
         public void GetConnection_InvalidConnectionString_MySqlException()
         {
             _mockConfigurationSection.InValidSection<Mock<IConfigurationSection>>(_invalidConnectionString);
@@ -97,7 +130,23 @@ namespace DbConnectionFactoryTests.Adapters
 
             _mockDbConnection.Setup(d => d.Open());
 
-            Assert.Throws<MySqlException>(() => _mySqlAdapter.GetConnection());
+            var result = Assert.Throws<MySqlException>(() => _mySqlAdapter.GetConnection());
+
+            Assert.IsType<MySqlException>(result);
+        }
+
+        [Fact]
+        public async Task GetConnectionAsync_InvalidConnectionString_MySqlException()
+        {
+            _mockConfigurationSection.InValidSection<Mock<IConfigurationSection>>(_invalidConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _mySqlAdapter = new(_mockConfiguration.Object);
+
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>()));
+
+            var result = await Assert.ThrowsAsync<MySqlException>(() => _mySqlAdapter.GetConnectionAsync());
+
+            Assert.IsType<MySqlException>(result);
         }
 
         [Fact]
@@ -110,6 +159,21 @@ namespace DbConnectionFactoryTests.Adapters
             _mockDbConnection.Setup(d => d.Open());
 
             var result = Assert.Throws<MySqlException>(() => _mySqlAdapter.GetConnection());
+
+            Assert.NotNull(result.Message);
+            Assert.Contains("failed with message: Access denied for user", result.Message, StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        [Fact]
+        public async Task GetConnectionAsync_InvalidConnectionString_MessageMySqlException()
+        {
+            _mockConfigurationSection.InValidSection<Mock<IConfigurationSection>>(_invalidConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _mySqlAdapter = new(_mockConfiguration.Object);
+
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>()));
+
+            var result = await Assert.ThrowsAsync<MySqlException>(() => _mySqlAdapter.GetConnectionAsync());
 
             Assert.NotNull(result.Message);
             Assert.Contains("failed with message: Access denied for user", result.Message, StringComparison.CurrentCultureIgnoreCase);

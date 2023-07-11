@@ -12,7 +12,7 @@ namespace DbConnectionFactory.Adapters
     public class SqlServerAdapter : IAdapter
     {
         private readonly IConfiguration _configuration;
-        private static DbConnection Connection { get; set; }
+        private static DbConnection Connection { get; set; } = null;
 
         public SqlServerAdapter(IConfiguration configuration)
         {
@@ -22,7 +22,7 @@ namespace DbConnectionFactory.Adapters
         /// <summary>
         /// Get connection for SqlServer
         /// </summary>
-        /// <returns>IDbConnection</returns>
+        /// <returns>returns connection</returns>
         /// <exception cref="SystemException">Error to connect server</exception>
         public IDbConnection GetConnection()
         {
@@ -36,7 +36,26 @@ namespace DbConnectionFactory.Adapters
                 throw ex;
             }
         }
-
+        /// <summary>
+        /// Get connection async
+        /// </summary>
+        /// <returns>return connection</returns>
+        public async Task<IDbConnection> GetConnectionAsync()
+        {
+            try
+            {
+                await Connection.OpenAsync();
+                return Connection;
+            }
+            catch (SqlException ex)
+            {
+                throw ex;
+            }
+        }
+        /// <summary>
+        /// Get session
+        /// </summary>
+        /// <returns>returns the current connection, otherwise it opens the connection.</returns>
         public IDbConnection GetSession()
         {
             if (ConnectionState.Open != Connection.State)
@@ -44,11 +63,33 @@ namespace DbConnectionFactory.Adapters
 
             return Connection;
         }
+        public async Task<IDbConnection> GetSessionAsync()
+        {
+            if (ConnectionState.Open != Connection.State)
+                await Connection.OpenAsync();
 
+            return Connection;
+        }
+        /// <summary>
+        /// Close connection
+        /// </summary>
         public void CloseConnection()
         {
             if (ConnectionState.Open == Connection.State)
                 Connection.Close();
+        }
+        /// <summary>
+        /// Close connection async
+        /// </summary>
+        public Task CloseConnectionAsync()
+        {
+            if (ConnectionState.Open == Connection.State)
+            {
+                Connection.CloseAsync();
+                return Task.CompletedTask;
+            }
+            else
+                return Task.CompletedTask;
         }
     }
 }

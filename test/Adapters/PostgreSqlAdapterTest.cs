@@ -1,5 +1,5 @@
 ﻿using DbConnectionFactory.Adapters;
-using DbConnectionFactoryTests.Helpers;
+using DbConnectionFactoryTests.Provider;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Npgsql;
@@ -47,6 +47,21 @@ namespace DbConnectionFactoryTests.Adapters
         }
 
         [Fact]
+        public async Task GetConnectionAsync_ValidConnectionString_NotNulConnectionAndIsAssignableFrom()
+        {
+            _mockConfigurationSection.ValidSection<Mock<IConfigurationSection>>(_validConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _postgreSqlAdapter = new(_mockConfiguration.Object);
+
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>())).Returns(()=> { return Task.CompletedTask; });
+
+            var result = await _postgreSqlAdapter.GetConnectionAsync();
+
+            Assert.NotNull(result);
+            Assert.IsAssignableFrom<IDbConnection>(result);
+        }
+
+        [Fact]
         public void GetConnection_ValidConnectionString_ConnectionStateIsOpen()
         {
             _mockConfigurationSection.ValidSection<Mock<IConfigurationSection>>(_validConnectionString);
@@ -56,6 +71,20 @@ namespace DbConnectionFactoryTests.Adapters
             _mockDbConnection.Setup(d => d.Open());
 
             var result = _postgreSqlAdapter.GetConnection();
+
+            Assert.Equal(ConnectionState.Open, result.State);
+        }
+
+        [Fact]
+        public async Task GetConnectionAsync_ValidConnectionString_ConnectionStateIsOpen()
+        {
+            _mockConfigurationSection.ValidSection<Mock<IConfigurationSection>>(_validConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _postgreSqlAdapter = new(_mockConfiguration.Object);
+
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>())).Returns(() => { return Task.CompletedTask; });
+
+            var result = await _postgreSqlAdapter.GetConnectionAsync();
 
             Assert.Equal(ConnectionState.Open, result.State);
         }
@@ -76,6 +105,21 @@ namespace DbConnectionFactoryTests.Adapters
         }
 
         [Fact]
+        public async Task GetConnectionAsync_InvalidConnectionString_NotEmptyMessage()
+        {
+            _mockConfigurationSection.InValidSection<Mock<IConfigurationSection>>(_invalidConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _postgreSqlAdapter = new(_mockConfiguration.Object);
+
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>())).Returns(() => { return Task.CompletedTask; });
+
+            var result = await Assert.ThrowsAsync<PostgresException>(() => _postgreSqlAdapter.GetConnectionAsync());
+
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.Message);
+        }
+
+        [Fact]
         public void GetConnection_InvalidConnectionString_NpgsqlException()
         {
             _mockConfigurationSection.InValidSection<Mock<IConfigurationSection>>(_invalidConnectionString);
@@ -85,6 +129,21 @@ namespace DbConnectionFactoryTests.Adapters
             _mockDbConnection.Setup(d => d.Open());
 
             Assert.Throws<PostgresException>(() => _postgreSqlAdapter.GetConnection());
+        }
+
+        [Fact]
+        public async Task GetConnectionAsync_InvalidConnectionString_NpgsqlException()
+        {
+            _mockConfigurationSection.InValidSection<Mock<IConfigurationSection>>(_invalidConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _postgreSqlAdapter = new(_mockConfiguration.Object);
+
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>())).Returns(()=> { return Task.CompletedTask; });
+
+            var result = await Assert.ThrowsAsync<PostgresException>(() => _postgreSqlAdapter.GetConnectionAsync());
+            
+            Assert.NotNull(result);
+            Assert.IsType<PostgresException>(result);
         }
 
         [Fact]
@@ -103,14 +162,18 @@ namespace DbConnectionFactoryTests.Adapters
         }
 
         [Fact]
-        public void Exception_NetworkError_ReturnNpgsqlException()
+        public async Task GetConnectionAsync_InvalidConnectionString_NotEmptyMessageText()
         {
-            Action error = () => { throw new NpgsqlException("Error", new Exception("Network error")); };
+            _mockConfigurationSection.InValidSection<Mock<IConfigurationSection>>(_invalidConnectionString);
+            _mockConfiguration.ValidConfiguration<Mock<IConfiguration>>(_mockConfigurationSection);
+            _postgreSqlAdapter = new(_mockConfiguration.Object);
 
-            var exception = Record.Exception(error);
+            _mockDbConnection.Setup(d => d.OpenAsync(It.IsAny<CancellationToken>()));
 
-            Assert.NotNull(exception);
-            Assert.IsType<NpgsqlException>(exception);
+            var result = await Assert.ThrowsAsync<PostgresException>(() => _postgreSqlAdapter.GetConnectionAsync());
+
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.MessageText);
         }
     }
 }

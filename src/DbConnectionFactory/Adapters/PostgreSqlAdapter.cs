@@ -11,7 +11,7 @@ namespace DbConnectionFactory.Adapters
     /// </summary>
     public class PostgreSqlAdapter : IAdapter
     {
-		private readonly IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         private static DbConnection Connection { get; set; } = null;
 
         public PostgreSqlAdapter(IConfiguration configuration)
@@ -36,7 +36,28 @@ namespace DbConnectionFactory.Adapters
             {
                 throw ex;
             }
-            catch (NpgsqlException ex) { 
+            catch (NpgsqlException ex)
+            {
+                throw ex;
+            }
+        }
+        /// <summary>
+        /// Get connection async
+        /// </summary>
+        /// <returns>returns connection</returns>
+        public async Task<IDbConnection> GetConnectionAsync()
+        {
+            try
+            {
+                await Connection.OpenAsync();
+                return Connection;
+            }
+            catch (PostgresException ex)
+            {
+                throw ex;
+            }
+            catch (NpgsqlException ex)
+            {
                 throw ex;
             }
         }
@@ -48,7 +69,18 @@ namespace DbConnectionFactory.Adapters
         {
             if (ConnectionState.Open != Connection.State)
                 Connection.Open();
-            
+
+            return Connection;
+        }
+        /// <summary>
+        /// Get session async
+        /// </summary>
+        /// <returns>returns the current connection, otherwise it opens the connection.</returns>
+        public async Task<IDbConnection> GetSessionAsync()
+        {
+            if (ConnectionState.Open != Connection.State)
+                await Connection.OpenAsync();
+
             return Connection;
         }
         /// <summary>
@@ -58,6 +90,19 @@ namespace DbConnectionFactory.Adapters
         {
             if (ConnectionState.Open == Connection.State)
                 Connection.Close();
+        }
+        /// <summary>
+        /// Close connection async
+        /// </summary>
+        public Task CloseConnectionAsync()
+        {
+            if (ConnectionState.Open == Connection.State)
+            {
+                Connection.CloseAsync();
+                return Task.CompletedTask;
+            }
+            else
+                return Task.CompletedTask;
         }
     }
 }
