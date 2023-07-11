@@ -8,7 +8,7 @@ This package was created to work primarily with dapper ORM and is currently only
 DbConnectionFactory is a [NuGet library](https://www.nuget.org/packages/FP.DbConnectionFactory "DbConnection Factory package")  
 You can also use docfx as a NuGet library:
 ```xml
-<PackageReference Include="FP.DbConnectionFactory" Version="1.1.0" />
+<PackageReference Include="FP.DbConnectionFactory" Version="1.2.0" />
 ```
 
 ### Example usage:
