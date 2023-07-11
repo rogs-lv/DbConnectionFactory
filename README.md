@@ -1,6 +1,7 @@
 # DbConnectionFactory - a way to connect with differents databases
 
-Creation of different database connections using the factory pattern
+Creation of different database connections using the factory pattern.
+This package was created to work primarily with dapper ORM and is currently only available for .NET Core 7.0.
 
 ## Package
 
@@ -30,6 +31,7 @@ public class Employee
     {
          var sql = "Insert/Select/Delete/Update";
          var result = await connection().ExecuteAsync(sql, entity);
+         connection().CloseConnection();
          return result;
     }
 }
