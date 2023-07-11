@@ -21,22 +21,15 @@ namespace DbConnectionFactory
         /// <exception cref="NotSupportedException">Database not supported or not implemented</exception>
         /// <exception cref="Exception">Error creating connection</exception>
         public IAdapter CreateConnection(ServerType type, IConfiguration configuration) {
-			try
+			
+			IAdapter result = type switch
 			{
-				IAdapter result = type switch
-				{
-					ServerType.MySql | ServerType.MariaDb => new MySqlAdapater(configuration),
-					ServerType.SqlServer => new SqlServerAdapter(configuration),
-					ServerType.PostgreSQL => new PostgreSqlAdapter(configuration),
-					_ => throw new NotSupportedException("Database not supported")
-				};
-				return result;
-			}
-			catch (Exception)
-			{
-				//log
-				throw new Exception("Can not created db connection");
-			}
+				ServerType.MySql or ServerType.MariaDb => new MySqlAdapter(configuration),
+				ServerType.SqlServer => new SqlServerAdapter(configuration),
+				ServerType.PostgreSQL => new PostgreSqlAdapter(configuration),
+				_ => throw new NotSupportedException("Database not supported")
+			};
+			return result;
         }
     }
 }
